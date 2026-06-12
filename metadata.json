@@ -1,0 +1,9 @@
+{
+  "name": "Welcome Goats",
+  "description": "Premium Animals, Nature & Birds Image Gallery App simulator and clean GetX Flutter codebase.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

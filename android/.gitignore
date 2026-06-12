@@ -1,0 +1,28 @@
+# Android-specific ignores
+/.gradle
+/.kotlin
+/local.properties
+/captures
+/elvis-cache
+/build
+/app/debug
+/app/profile
+/app/release
+gradle-wrapper.jar
+GeneratedPluginRegistrant.java
+
+# Keystore / Signing
+*.jks
+*.keystore
+key.properties
+
+# Symbolication / Obfuscation
+app.*.symbols
+app.*.map.json
+
+# Generic compiled files
+*.class
+
+# Android Studio / IntelliJ
+*.iml
+.idea

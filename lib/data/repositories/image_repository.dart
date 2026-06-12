@@ -1,0 +1,73 @@
+import '../models/image_item.dart';
+
+class ImageRepository {
+  static List<ImageItem> getInitialPresets() {
+    return [
+      ImageItem(
+        id: 'img_1',
+        title: 'Misty Alpine Ibex',
+        description: 'A proud, long-horned Alpine Ibex standing firm upon a rocky emerald ridge shrouded by morning mist.',
+        category: 'Animals',
+        imageUrl: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?q=80&w=600&auto=format&fit=crop',
+        uploadDate: '2026-06-05',
+        uploaderName: 'Sarah Jenkins',
+        downloadsCount: 1420,
+        likesCount: 890,
+        isFavorite: true,
+        location: 'Gran Paradiso, Italy',
+      ),
+      ImageItem(
+        id: 'img_2',
+        title: 'Sulphur-crested Cockatoo',
+        description: 'An elegant white cockatoo showing off its bright sulfur crest against deep eucalyptus forest foliage.',
+        category: 'Birds',
+        imageUrl: 'https://images.unsplash.com/photo-1552084117-56a987666449?q=80&w=600&auto=format&fit=crop',
+        uploadDate: '2026-06-04',
+        uploaderName: 'Michael Chen',
+        downloadsCount: 935,
+        likesCount: 512,
+        isFavorite: false,
+        location: 'Dandenong Ranges, Australia',
+      ),
+      ImageItem(
+        id: 'img_3',
+        title: 'Mossy Forest Monolith',
+        description: 'Stately ancient giant redwoods wrapped in rich jade moss as golden hour sunbeams filter through moist foggy canopy.',
+        category: 'Nature',
+        imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=600&auto=format&fit=crop',
+        uploadDate: '2026-06-03',
+        uploaderName: 'Elena Rostova',
+        downloadsCount: 2201,
+        likesCount: 1430,
+        isFavorite: true,
+        location: 'Redwoods State Park, USA',
+      ),
+      ImageItem(
+        id: 'img_4',
+        title: 'Bengal Royal Hunt',
+        description: 'An apex predator Bengal Tiger silently wading through neon green duckweed lakes, eyes locked on riverbank prey.',
+        category: 'Animals',
+        imageUrl: 'https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?q=80&w=600&auto=format&fit=crop',
+        uploadDate: '2026-06-02',
+        uploaderName: 'Sarah Jenkins',
+        downloadsCount: 4210,
+        likesCount: 2901,
+        isFavorite: false,
+        location: 'Ranthambore, India',
+      ),
+      ImageItem(
+        id: 'img_5',
+        title: 'Vermilion Flycatcher Jewel',
+        description: 'A striking glowing scarlet-colored Vermilion Flycatcher resting perfectly on an old desert mesquite branch.',
+        category: 'Birds',
+        imageUrl: 'https://images.unsplash.com/photo-1452570053594-1b985d6ea890?q=80&w=600&auto=format&fit=crop',
+        uploadDate: '2026-05-30',
+        uploaderName: 'Arthur Vance',
+        downloadsCount: 1104,
+        likesCount: 654,
+        isFavorite: false,
+        location: 'Sonoran Desert, Arizona',
+      ),
+    ];
+  }
+}

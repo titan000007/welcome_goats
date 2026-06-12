@@ -1,0 +1,32 @@
+name: WelcomeGoats
+description: A modern premium Animals, Nature & Birds Image Gallery App called Welcome Goats with GetX state management.
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  get: ^4.6.6
+  get_storage: ^2.1.1
+  image_picker: ^1.0.7
+  cupertino_icons: ^1.0.8
+  firebase_core:
+  firebase_storage:
+  cloud_firestore:
+  photo_manager: ^3.0.0
+  permission_handler: ^11.0.0
+  firebase_auth: ^6.5.2
+  google_sign_in: ^7.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/

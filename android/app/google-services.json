@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "657381890600",
+    "project_id": "welcomeboats-2eff8",
+    "storage_bucket": "welcomeboats-2eff8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657381890600:android:74ffe4f9ed5ee835f4b31d",
+        "android_client_info": {
+          "package_name": "com.example.welcome_goats"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBhmvlfdx4JBeokBFT3KShFAXPPqnK1-U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657381890600:android:aa7d5058dd7b90a6f4b31d",
+        "android_client_info": {
+          "package_name": "com.welcomeboats.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBhmvlfdx4JBeokBFT3KShFAXPPqnK1-U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
