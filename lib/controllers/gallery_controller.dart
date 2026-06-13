@@ -37,6 +37,7 @@ class GalleryController extends GetxController {
       rxSearchQuery.value = searchController.text;
     });
 
+
     scrollController.addListener(() {
       if (scrollController.position.pixels >=
           scrollController.position.maxScrollExtent - 200) {
