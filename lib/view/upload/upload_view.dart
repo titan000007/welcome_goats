@@ -5,6 +5,7 @@ import '../../controllers/gallery_controller.dart';
 import '../../data/models/image_item.dart';
 import '../../widgets/common_button.dart';
 import '../../widgets/common_textfield.dart';
+import '../../utils/app_toast.dart';
 
 class UploadView extends StatefulWidget {
   const UploadView({super.key});
@@ -244,8 +245,7 @@ class _UploadViewState extends State<UploadView> {
                     text: 'Publish species to database',
                     onPressed: () {
                       if (titleController.text.trim().isEmpty) {
-                        Get.snackbar('Alert', 'Please enter a species title!',
-                            snackPosition: SnackPosition.BOTTOM);
+                        AppToast.show('Please enter a species title!', isError: true);
                         return;
                       }
 
@@ -274,7 +274,8 @@ class _UploadViewState extends State<UploadView> {
                           isFavorite: false,
                         );
 
-                        controller.addProduct(newItem);
+                        // controller.addProduct(newItem);
+                        // AppToast.show('Species published successfully!');
                         Get.back();
                       });
                     },

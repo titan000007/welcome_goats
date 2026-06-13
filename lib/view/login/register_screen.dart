@@ -1,22 +1,21 @@
-import 'package:WelcomeGoats/controllers/login_controller.dart';
+import 'dart:io';
+import 'package:WelcomeGoats/controllers/register_controller.dart';
 import 'package:WelcomeGoats/routes/app_pages.dart';
-import 'package:WelcomeGoats/view/login/widgets/apple_google_login_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../utils/app_images.dart';
 import '../../utils/colors.dart';
 import '../../utils/common_button.dart';
-import '../../utils/app_toast.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final controller = Get.put(LoginController());
+class _RegisterScreenState extends State<RegisterScreen> {
+  final controller = Get.put(RegisterController());
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           child: SingleChildScrollView(
             child: Form(
-              key: controller.loginFormKey,
+              key: controller.registerFormKey,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 children: [
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 80),
                   Column(
                     children: [
                       Container(
@@ -52,14 +51,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 1.5),
                         ),
                         child: const Icon(
-                          Icons.local_florist,
+                          Icons.person_add_rounded,
                           color: AppColors.primaryLight,
                           size: 32,
                         ),
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        'WELCOME GOATS',
+                        'CREATE ACCOUNT',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
@@ -67,19 +66,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           letterSpacing: 2.0,
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      const Text(
-                        'SPECIES SANCTUARY',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryLight,
-                          letterSpacing: 4.0,
-                        ),
-                      ),
                       const SizedBox(height: 4),
                       Text(
-                        'Continue your wildlife\n exploration journey',
+                        'Join our wildlife exploration community',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
@@ -89,9 +78,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 24),
 
-                  /// email password card
+                  /// registration card
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 18),
@@ -108,16 +97,84 @@ class _LoginScreenState extends State<LoginScreen> {
                               blurRadius: 12)
                         ]),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+                        /// Profile Image Section
+                        GestureDetector(
+                          onTap: controller.pickImage,
+                          child: Obx(
+                            () => Container(
+                              height: 100,
+                              width: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: .2),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: const Color(0xff2d2e2d), width: 2),
+                                image: controller.selectedImagePath.value.isNotEmpty
+                                    ? DecorationImage(
+                                        image: FileImage(
+                                            File(controller.selectedImagePath.value)),
+                                        fit: BoxFit.cover)
+                                    : null,
+                              ),
+                              child: controller.selectedImagePath.value.isEmpty
+                                  ? const Icon(
+                                      Icons.camera_alt_rounded,
+                                      color: Color(0xff0e9169),
+                                      size: 40,
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Upload Profile Photo',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        /// Name text field
+                        TextFormField(
+                          controller: controller.nameController,
+                          validator: controller.validateName,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 13.0, horizontal: 16.0),
+                              filled: true,
+                              fillColor: Colors.black.withValues(alpha: .05),
+                              prefixIcon: const Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Color(0xff0e9169),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      width: 1, color: Color(0xff2d2e2d))),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      width: 1, color: Color(0xff2d2e2d))),
+                              hintText: 'Full Name',
+                              hintStyle: const TextStyle(color: Colors.grey),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      width: 1, color: Color(0xff2d2e2d)))),
+                        ),
+                        const SizedBox(height: 16),
+
                         /// email text field
                         TextFormField(
                           controller: controller.emailController,
                           validator: controller.validateEmail,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           style: const TextStyle(color: Colors.white),
                           keyboardType: TextInputType.emailAddress,
-                          keyboardAppearance: Brightness.light,
                           decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 13.0, horizontal: 16.0),
@@ -150,12 +207,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           () => TextFormField(
                             controller: controller.passwordController,
                             validator: controller.validatePassword,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
                             obscureText: !controller.isPasswordVisible.value,
                             style: const TextStyle(color: Colors.white),
-                            keyboardAppearance: Brightness.light,
-                            keyboardType: TextInputType.visiblePassword,
                             decoration: InputDecoration(
                                 contentPadding: const EdgeInsets.symmetric(
                                     vertical: 13.0, horizontal: 16.0),
@@ -193,96 +246,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                         width: 1, color: Color(0xff2d2e2d)))),
                           ),
                         ),
-                        const SizedBox(height: 12),
-
-                        GestureDetector(
-                          onTap: () {
-                            AppToast.show('This feature is coming soon');
-                          },
-                          child: const Text(
-                            textAlign: TextAlign.end,
-                            'Forgot Password',
-                            style: TextStyle(
-                                color: Color(0xFF00E5A8),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
 
                         Obx(
                           () => CommonButton(
-                            onTap: controller.login,
-                            title: "LOGIN",
+                            onTap: controller.signUp,
+                            title: "CREATE ACCOUNT",
                             isLoading: controller.isLoading.value,
                           ),
                         ),
-                        const SizedBox(height: 14),
-                        // Divider
-                        const Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                endIndent: 10,
-                                thickness: 1.5,
-                                color: Color(0xFF1c1d1c),
-                              ),
-                            ),
-                            Text(
-                              'OR CONTINUE WITH',
-                              style: TextStyle(
-                                  color: Color(0xFF8A8A8A),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                            Expanded(
-                              child: Divider(
-                                indent: 10,
-                                thickness: 1.5,
-                                color: Color(0xFF1c1d1c),
-                              ),
-                            ),
-                          ],
-                        ),
-                        //google and apple login
-                        const SizedBox(height: 14),
-
-                        Row(
-                          children: [
-                            Expanded(
-                                child: AppleGoogleLoginCard(
-                              title: 'Google',
-                              image: AppImages.googleIcon,
-                              onTap: () async {
-                                final userCredential =
-                                    await controller.signInWithGoogle();
-                                if (userCredential != null) {
-                                  Get.offAllNamed(AppRoutes.home);
-                                }
-                              },
-                            )),
-                            const SizedBox(width: 12),
-                            Expanded(
-                                child: AppleGoogleLoginCard(
-                              title: 'Apple',
-                              color: AppColors.textLightSecondary,
-                              image: AppImages.appleIcon,
-                              onTap: () async {
-                                // bool result = await controller.signOutFromGoogle();
-                                // if (result) userCredential.value = '';
-                              },
-                            )),
-                          ],
-                        )
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
                   GestureDetector(
-                    onTap: () => Get.toNamed(AppRoutes.register),
+                    onTap: () => Get.back(),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
                           color: const Color(0xFF111111).withValues(alpha: .30),
@@ -297,12 +278,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           ]),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Column(
                             children: [
                               Text(
-                                "Don't have an account?",
+                                "Already have an account?",
                                 style: TextStyle(
                                   color: AppColors.textLightSecondary,
                                   fontSize: 12,
@@ -312,10 +292,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: 4),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Create Account",
+                                    "Login Now",
                                     style: TextStyle(
                                       color: AppColors.primaryLight,
                                       fontSize: 12,

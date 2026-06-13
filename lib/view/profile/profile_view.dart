@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../utils/colors.dart';
@@ -9,6 +10,7 @@ class ProfileView extends StatelessWidget {
   ProfileView({super.key});
 
   final GalleryController controller = Get.find<GalleryController>();
+  final User? user = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +51,17 @@ class ProfileView extends StatelessWidget {
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.primary, width: 2),
+                          border:
+                              Border.all(color: AppColors.primary, width: 2),
                         ),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 40,
-                          backgroundImage: NetworkImage(
-                            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
-                          ),
+                          backgroundColor: AppColors.borderDark,
+                          backgroundImage: user?.photoURL != null
+                              ? NetworkImage(user!.photoURL!)
+                              : const NetworkImage(
+                                  'https://ui-avatars.com/api/?name=User&background=0e9169&color=fff',
+                                ),
                         ),
                       ),
                       Positioned(
@@ -67,20 +73,31 @@ class ProfileView extends StatelessWidget {
                             color: AppColors.accent,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.verified, size: 14, color: Colors.black),
+                          child: const Icon(Icons.verified,
+                              size: 14, color: Colors.black),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Denver Brooks',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  Text(
+                    user?.displayName ??
+                        user?.email?.split('@').first ??
+                        'Sanctuary Member',
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'HEAD WILDLIFE RANGER • ID-2026',
-                    style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.bold, color: AppColors.primaryLight, letterSpacing: 1.5),
+                  Text(
+                    'WILDLIFE ENTHUSIAST • ${user?.email?.toUpperCase() ?? 'ID-2026'}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryLight,
+                        letterSpacing: 1.5),
                   ),
                 ],
               ),
@@ -90,9 +107,13 @@ class ProfileView extends StatelessWidget {
 
             // 2. Metrics grid card
             Obx(() {
-              final totalUploads = controller.images.where((img) => img.userId == 'user_default').length;
-              final totalFavorites = controller.images.where((img) => img.isFavorite).length;
-              final totalDownloads = controller.images.fold<int>(0, (sum, item) => sum + item.downloadsCount);
+              final totalUploads = controller.images
+                  .where((img) => img.userId == 'user_default')
+                  .length;
+              final totalFavorites =
+                  controller.images.where((img) => img.isFavorite).length;
+              final totalDownloads = controller.images
+                  .fold<int>(0, (sum, item) => sum + item.downloadsCount);
 
               return Column(
                 children: [
@@ -149,7 +170,11 @@ class ProfileView extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 'ACCOUNT PREFERENCES',
-                style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.textDarkSecondary, letterSpacing: 1.2),
+                style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDarkSecondary,
+                    letterSpacing: 1.2),
               ),
             ),
             const SizedBox(height: 10),
@@ -164,24 +189,42 @@ class ProfileView extends StatelessWidget {
                   Obx(() {
                     final curr = controller.rxIsLightTheme.value;
                     return ListTile(
-                      leading: Icon(curr ? Icons.wb_sunny : Icons.nightlight_round, color: AppColors.primaryLight, size: 20),
-                      title: const Text('Sanctuary visual theme', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
-                      subtitle: Text(curr ? 'Polished Light colors' : 'Nature forest Dark', style: TextStyle(fontSize: 9.5, color: Colors.white.withOpacity(0.3))),
+                      leading: Icon(
+                          curr ? Icons.wb_sunny : Icons.nightlight_round,
+                          color: AppColors.primaryLight,
+                          size: 20),
+                      title: const Text('Sanctuary visual theme',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                          curr ? 'Polished Light colors' : 'Nature forest Dark',
+                          style: TextStyle(
+                              fontSize: 9.5,
+                              color: Colors.white.withOpacity(0.3))),
                       trailing: Switch(
                         value: curr,
                         activeColor: AppColors.primary,
                         onChanged: (val) {
                           controller.rxIsLightTheme.value = val;
-                          Get.changeTheme(val ? ThemeData.light() : ThemeData.dark());
+                          Get.changeTheme(
+                              val ? ThemeData.light() : ThemeData.dark());
                         },
                       ),
                     );
                   }),
                   const Divider(color: AppColors.borderDark, height: 1),
                   ListTile(
-                    leading: const Icon(Icons.security, color: AppColors.primaryLight, size: 20),
-                    title: const Text('Encryption & credentials', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 12),
+                    leading: const Icon(Icons.security,
+                        color: AppColors.primaryLight, size: 20),
+                    title: const Text('Encryption & credentials',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold)),
+                    trailing: const Icon(Icons.arrow_forward_ios,
+                        color: Colors.white24, size: 12),
                     onTap: () {},
                   ),
                 ],
@@ -203,23 +246,40 @@ class ProfileView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       side: const BorderSide(color: AppColors.borderDark),
                     ),
-                    title: const Text('Log Out', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                    content: const Text('Are you sure you want to end your active session?', style: TextStyle(color: AppColors.textDarkSecondary, fontSize: 12)),
+                    title: const Text('Log Out',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold)),
+                    content: const Text(
+                        'Are you sure you want to end your active session?',
+                        style: TextStyle(
+                            color: AppColors.textDarkSecondary, fontSize: 12)),
                     actions: [
                       TextButton(
                         onPressed: () => Get.back(),
-                        child: const Text('CANCEL', style: TextStyle(color: AppColors.textDarkSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                        child: const Text('CANCEL',
+                            style: TextStyle(
+                                color: AppColors.textDarkSecondary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold)),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.redAccent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                         ),
-                        onPressed: () {
+                        onPressed: () async {
+                          await FirebaseAuth.instance.signOut();
                           Get.back(); // close alert dialog
                           Get.offAllNamed(AppRoutes.splash);
                         },
-                        child: const Text('END', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                        child: const Text('END',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -262,7 +322,10 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 title.toUpperCase(),
-                style: const TextStyle(fontSize: 8, color: AppColors.textDarkSecondary, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 8,
+                    color: AppColors.textDarkSecondary,
+                    fontWeight: FontWeight.bold),
               ),
               Icon(icon, size: 14, color: AppColors.primaryLight),
             ],
@@ -270,7 +333,8 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+            style: const TextStyle(
+                fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
           ),
         ],
       ),

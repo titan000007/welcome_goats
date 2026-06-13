@@ -5,18 +5,21 @@ class CommonButton extends StatelessWidget {
   final String title;
   final bool? showBorder;
   final double? height;
+  final bool isLoading;
 
-  const CommonButton(
-      {super.key,
-      required this.onTap,
-      required this.title,
-      this.showBorder = false,
-      this.height});
+  const CommonButton({
+    super.key,
+    required this.onTap,
+    required this.title,
+    this.showBorder = false,
+    this.height,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: isLoading ? null : onTap,
       child: Container(
         width: double.infinity,
         height: height ?? 48.0,
@@ -37,16 +40,25 @@ class CommonButton extends StatelessWidget {
           ],
         ),
         child: Center(
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              letterSpacing: 1.3,
-            ),
-          ),
+          child: isLoading
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.black,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    letterSpacing: 1.3,
+                  ),
+                ),
         ),
       ),
     );

@@ -12,7 +12,20 @@
           "package_name": "com.example.welcome_goats"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "657381890600-432osi8gcjp8fho5i9kghq8lsh3f6fe3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.welcome_goats",
+            "certificate_hash": "923153fef423d533bfe7da8bbb13f1b574ab04ba"
+          }
+        },
+        {
+          "client_id": "657381890600-a4sc8m897ffuj71bclrtc5hpsp82bgsi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCBhmvlfdx4JBeokBFT3KShFAXPPqnK1-U"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "657381890600-a4sc8m897ffuj71bclrtc5hpsp82bgsi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "657381890600-48utp7mvcnd9692ht3hmtmli8rihvfac.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "na"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +56,20 @@
           "package_name": "com.welcomeboats.android"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "657381890600-u8mge3skp85gp9nan3a6tbipnd5mcnog.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.welcomeboats.android",
+            "certificate_hash": "923153fef423d533bfe7da8bbb13f1b574ab04ba"
+          }
+        },
+        {
+          "client_id": "657381890600-a4sc8m897ffuj71bclrtc5hpsp82bgsi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCBhmvlfdx4JBeokBFT3KShFAXPPqnK1-U"
@@ -39,7 +77,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "657381890600-a4sc8m897ffuj71bclrtc5hpsp82bgsi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "657381890600-48utp7mvcnd9692ht3hmtmli8rihvfac.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "na"
+              }
+            }
+          ]
         }
       }
     }

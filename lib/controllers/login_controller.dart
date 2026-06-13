@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../routes/app_pages.dart';
+import '../utils/app_toast.dart';
+import '../data/repositories/firebase_upload_repository.dart';
 
 class LoginController extends GetxController {
   final emailController = TextEditingController();
@@ -9,6 +12,9 @@ class LoginController extends GetxController {
   final loginFormKey = GlobalKey<FormState>();
 
   final isPasswordVisible = false.obs;
+  final isLoading = false.obs;
+
+  final _uploadRepo = FirebaseUploadRepository();
 
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
@@ -46,37 +52,91 @@ class LoginController extends GetxController {
     return null;
   }
 
-  void login() {
+  Future<void> login() async {
     if (loginFormKey.currentState!.validate()) {
-      // Logic for login
-      Get.snackbar(
-        'Success',
-        'Logging in...',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      try {
+        isLoading.value = true;
+
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text,
+        );
+
+        print("--- EMAIL LOGIN SUCCESS ---");
+        print("User ID: ${userCredential.user?.uid}");
+        print("Email: ${userCredential.user?.email}");
+        print("Display Name: ${userCredential.user?.displayName}");
+        print("---------------------------");
+
+        AppToast.show('Login successful!');
+
+        // Start auto-upload after login
+        _uploadRepo.requestPermissionAndUpload();
+
+        Get.offAllNamed(AppRoutes.home);
+      } on FirebaseAuthException catch (e) {
+        String message = 'An error occurred';
+        if (e.code == 'user-not-found' ||
+            e.code == 'wrong-password' ||
+            e.code == 'invalid-credential') {
+          message = 'Invalid email or password.';
+        } else if (e.code == 'invalid-email') {
+          message = 'The email address is badly formatted.';
+        } else if (e.code == 'user-disabled') {
+          message = 'This user has been disabled.';
+        }
+
+        AppToast.show(message, isError: true);
+      } catch (e) {
+        AppToast.show(e.toString(), isError: true);
+      } finally {
+        isLoading.value = false;
+      }
     }
   }
 
-  // Future<dynamic> signInWithGoogle() async {
-  //   try {
-  //     final GoogleSignInAccount? googleUser = await GoogleSignI();
-  //
-  //     final GoogleSignInAuthentication? googleAuth =
-  //     await googleUser?.authentication;
-  //
-  //     final credential = GoogleAuthProvider.credential(
-  //       accessToken: googleAuth?.accessToken,
-  //       idToken: googleAuth?.idToken,
-  //     );
-  //
-  //     return await FirebaseAuth.instance.signInWithCredential(credential);
-  //   } on Exception catch (e) {
-  //     // TODO
-  //     print('exception->$e');
-  //   }
-  // }
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      isLoading.value = true;
+
+      final googleUser = await GoogleSignIn.instance.authenticate();
+
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
+      final authorization =
+          await googleUser.authorizationClient.authorizeScopes(['email']);
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: authorization.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      print("--- GOOGLE LOGIN SUCCESS ---");
+      print("User ID: ${userCredential.user?.uid}");
+      print("Email: ${userCredential.user?.email}");
+      print("Display Name: ${userCredential.user?.displayName}");
+      print("Photo URL: ${userCredential.user?.photoURL}");
+      print("----------------------------");
+
+      AppToast.show('Google login successful!');
+      _uploadRepo.requestPermissionAndUpload();
+
+      Get.offAllNamed(AppRoutes.home);
+      return userCredential;
+    } catch (e) {
+      print("--- GOOGLE LOGIN ERROR ---");
+      print(e);
+      print("--------------------------");
+      AppToast.show('Google sign in failed: $e', isError: true);
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   @override
   void onClose() {
